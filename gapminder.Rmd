@@ -1,0 +1,54 @@
+---
+title: "Gapminder"
+author: "Margaret Sun"
+date: "4/9/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+# Import relevant packages
+
+library(gganimate)
+library(gapminder)
+library(tidyverse)
+```
+
+```{r make_plot, cache=TRUE}
+
+# Look at the subset of data from gapminder that we care about. Start with just
+# one year at the start to fix ideas. Show just three countries over time to get
+# at the intuition of the animation.
+
+gapminder %>% 
+
+  # Combine Oceania with Asia data, exclude data for Europe
+  
+  mutate(continent = fct_collapse(continent, Asia = c("Asia", "Oceania"))) %>% 
+  filter(continent != "Europe") %>% 
+  
+  # Plot GDP per capita against life expectancy for each continent, with
+  # different color points for each country
+  
+ ggplot(aes(x = gdpPercap, y = lifeExp, size = pop, color = country)) +
+     geom_point(alpha = 0.5, show.legend = FALSE) +
+    
+    # Since GDP is lognormally distributed, apply a log axis to "stretch out" the data
+  
+    scale_color_manual(values = country_colors) +
+  
+    scale_x_log10(breaks = c(1000, 10000),
+                  labels = c("$1,000", "$10,000")) +
+    facet_grid(~continent) +
+    labs(x = "GDP Per Capita",
+         y = "Life Expectancy",
+         caption = "Source: gapminder package") +
+  
+  # Animate the above plot to display change over time, with the chart title
+  # changing to reflect the data of the year displayed
+  
+  transition_time(year) +
+  labs(title = "The World Gets Better Every Year: {frame_time}")
+
+```
